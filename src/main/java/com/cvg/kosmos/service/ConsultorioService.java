@@ -17,7 +17,6 @@ public class ConsultorioService {
     public ConsultorioService(IConsultorio repository) {
         this.repository = repository;
     }
-
     public Optional<Consultorio> findById(Long id){
         return this.repository.findById(id);
     }
