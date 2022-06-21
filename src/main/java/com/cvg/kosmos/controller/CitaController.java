@@ -54,7 +54,7 @@ public class CitaController {
         try {
             if (cita.isPresent()) {
                 this.citaService.cancelarCita( cita.get() ) ;
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.singletonMap("message", "Registro eliminado"));
+                return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("message", "Registro eliminado"));
             }
         } catch (NoSuchElementException e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("message", "Elemento no encontrado"));
