@@ -23,4 +23,7 @@ public interface ICitas extends JpaRepository<Cita, Long> {
     Integer totalCitasDelDia(@Param("date") LocalDate dia, @Param("doctor") Long doctor);
     @Query(value = "SELECT * FROM citas c WHERE c.nombre_paciente = :paciente AND DATE(c.horario_consulta) = :date", nativeQuery = true)
     List<Cita> citasPacienteDia(@Param("date") LocalDate dia, @Param("paciente") String paciente);
+
+    @Query(value = "SELECT * FROM citas c WHERE c.nombre_paciente = :paciente AND c.horario_consulta BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true)
+    List<Cita> buscarCitasRangoFechas(@Param("fechaInicio") LocalDateTime fechaInicio, @Param("fechaFin") LocalDateTime fechaFin, @Param("paciente") String paciente);
 }

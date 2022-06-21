@@ -75,31 +75,29 @@ public class CitaController {
             Consultorio consultorio = optionalConsultorio.orElseThrow();
             Doctor doctor = optionalDoctor.orElseThrow();
 
-            LocalDateTime date = this.dateFormatter( citaDto.getHorarioConsulta() );
-            List<Cita> citasPorPaciente = this.citaService.totalCitasDelDiaPorPaciente( date.toLocalDate(), citaDto.getNombrePaciente() );
-            LocalDateTime fechaRegistrada = citasPorPaciente.size() > 0 ? citasPorPaciente.get( citasPorPaciente.size() -1).getHorarioConsulta() : LocalDateTime.now();
-            Long horas = ChronoUnit.HOURS.between( fechaRegistrada, date );
+            LocalDateTime fechaCita = this.dateFormatter( citaDto.getHorarioConsulta() );
+            LocalDateTime twoAfter = fechaCita.plusHours(2L).minusMinutes(2L);
+            List<Cita> citasCercanas = this.citaService.buscarCitasRangoFechas(fechaCita, twoAfter, citaDto.getNombrePaciente());
 
-            if (horas >= 0 && horas < 2 && citasPorPaciente.size() > 0) {
+            if (citasCercanas.size() > 0) {
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "Ya tiene una cita agendada, solo puede tener citas 2 horas después de la cita registrada..."));
             }
 
-            if (this.citaService.existsByHorarioAndDoctor( date, doctor )){
+            if (this.citaService.existsByHorarioAndDoctor( fechaCita, doctor )){
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "El doctor no está disponible a esa hora..."));
             }
-            if (this.citaService.existsByHorarioAndConsultorio( date, consultorio )){
+            if (this.citaService.existsByHorarioAndConsultorio( fechaCita, consultorio )){
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "El consultorio no está disponible a esa hora..."));
             }
-            if (this.citaService.totalCitasDelDia( date.toLocalDate(), doctor.getId()) >= MAX_CITAS){
+            if (this.citaService.totalCitasDelDia( fechaCita.toLocalDate(), doctor.getId()) >= MAX_CITAS){
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "El doctor ya no tiene espacio en su agenda..."));
             }
-
             Cita nuevaCita = new Cita();
-            nuevaCita.setHorarioConsulta( date );
+            nuevaCita.setHorarioConsulta( fechaCita );
             nuevaCita.setNombrePaciente( citaDto.getNombrePaciente() );
             nuevaCita.setDoctor( doctor );
             nuevaCita.setConsultorio( consultorio );

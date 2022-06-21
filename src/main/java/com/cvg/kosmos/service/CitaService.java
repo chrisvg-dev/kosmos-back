@@ -4,6 +4,7 @@ import com.cvg.kosmos.models.entity.Cita;
 import com.cvg.kosmos.models.entity.Consultorio;
 import com.cvg.kosmos.models.entity.Doctor;
 import com.cvg.kosmos.models.repository.ICitas;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -47,6 +48,11 @@ public class CitaService {
     public List<Cita> totalCitasDelDiaPorPaciente(LocalDate horario, String paciente) {
         return this.repository.citasPacienteDia(horario, paciente);
     }
+
+    public List<Cita> buscarCitasRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin, String paciente) {
+        return this.repository.buscarCitasRangoFechas(fechaInicio, fechaFin, paciente);
+    }
+
     public void cancelarCita(Cita c) {
         Optional<Cita> citaOptional = this.repository.findById(c.getId());
         if ( citaOptional.isPresent() ) {
