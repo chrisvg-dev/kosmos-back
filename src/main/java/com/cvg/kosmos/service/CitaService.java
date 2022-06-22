@@ -5,6 +5,7 @@ import com.cvg.kosmos.models.entity.Consultorio;
 import com.cvg.kosmos.models.entity.Doctor;
 import com.cvg.kosmos.models.repository.ICitas;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +30,21 @@ public class CitaService {
     public List<Cita> listarCitas() {
         return this.repository.findAll();
     }
+
+    public List<Cita> listarCitasPorDoctor(Doctor doctor) {
+        return this.repository.findByDoctor(doctor);
+    }
+    public List<Cita> listarCitasPorConsultorio(Consultorio consultorio) {
+        return this.repository.findByConsultorio(consultorio);
+    }
+
+    public List<Cita> listarPorFecha(LocalDate fecha) {
+        return this.repository.buscarPorFecha(fecha);
+    }
+    public List<Cita> listarPorFechaDoctor(LocalDate fecha, Long doctorId) {
+        return this.repository.buscarPorFechaAndDoctor(fecha, doctorId);
+    }
+
 
     public boolean existsByHorarioAndConsultorio(LocalDateTime horario, Consultorio consultorio) {
         return this.repository.existsByHorarioConsultaAndConsultorio(horario, consultorio);

@@ -3,15 +3,12 @@ package com.cvg.kosmos.service;
 import com.cvg.kosmos.models.entity.Consultorio;
 import com.cvg.kosmos.models.repository.IConsultorio;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ConsultorioService {
-
     private final IConsultorio repository;
-
     public ConsultorioService(IConsultorio repository) {
         this.repository = repository;
     }

@@ -15,8 +15,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @RestController
@@ -34,20 +37,31 @@ public class CitaController {
         this.doctorService = doctorService;
         this.consultorioService = consultorioService;
     }
-
     @GetMapping
     public List<Cita> listarCitas(){
         return this.citaService.listarCitas();
     }
     @GetMapping("/doctor/{doctorId}")
     public List<Cita> listarCitasPorDoctor(@PathVariable Long doctorId){
-        return null;
+        Optional<Doctor> optionalDoctor = this.doctorService.findById(doctorId);
+        return this.citaService.listarCitasPorDoctor( optionalDoctor.orElseThrow() );
     }
-    @GetMapping("/consultorio/{consultorioId}")
-    public List<Cita> listarCitasPorConsultorio(@PathVariable Long consultorioId){
-        return null;
+    @GetMapping("/consultorio/{id}")
+    public List<Cita> listarCitasPorConsultorio(@PathVariable Long id){
+        Optional<Consultorio> optionalConsultorio = this.consultorioService.findById(id);
+        return this.citaService.listarCitasPorConsultorio(optionalConsultorio.orElseThrow());
     }
-
+    @GetMapping("/{fecha}")
+    public List<Cita> listarCitasPorFecha(@PathVariable String fecha){
+        LocalDate nuevaFecha = LocalDate.parse(fecha);
+        return this.citaService.listarPorFecha(nuevaFecha);
+    }
+    @GetMapping("/{fecha}/doctor/{doctorId}")
+    public List<Cita> listarCitasPorFechaDoctor(@PathVariable String fecha, @PathVariable Long doctorId){
+        LocalDate nuevaFecha = LocalDate.parse(fecha);
+        Optional<Doctor> optionalDoctor = this.doctorService.findById(doctorId);
+        return this.citaService.listarPorFechaDoctor(nuevaFecha, optionalDoctor.get().getId());
+    }
     @DeleteMapping("/cita/{citaId}")
     public ResponseEntity<?> eliminarCita(@PathVariable Long citaId){
         Optional<Cita> cita = this.citaService.buscarPorId(citaId);
@@ -64,7 +78,6 @@ public class CitaController {
 
     @PostMapping
     public ResponseEntity<?> guardarCita(@Valid @RequestBody CitaDto citaDto, BindingResult result) {
-        LOG.info( citaDto.toString() );
         if (result.hasErrors()) return validate(result);
         Optional<Doctor> optionalDoctor = this.doctorService.findById(citaDto.getDoctorId());
         Optional<Consultorio> optionalConsultorio = this.consultorioService.findById(citaDto.getConsultorioId());
@@ -77,11 +90,14 @@ public class CitaController {
             LocalDateTime twoAfter = fechaCita.plusHours(2L).minusMinutes(2L);
             List<Cita> citasCercanas = this.citaService.buscarCitasRangoFechas(fechaCita, twoAfter, citaDto.getNombrePaciente());
 
+            if (fechaCita.compareTo( LocalDateTime.now() )  < 0) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap(
+                        "message", "No puede seleccionar una fecha pasada..."));
+            }
             if (citasCercanas.size() > 0) {
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "Ya tiene una cita agendada, solo puede tener citas 2 horas después de la cita registrada..."));
             }
-
             if (this.citaService.existsByHorarioAndDoctor( fechaCita, doctor )){
                 return ResponseEntity.badRequest().body(Collections.singletonMap(
                         "message", "El doctor no está disponible a esa hora..."));
@@ -113,8 +129,13 @@ public class CitaController {
         return ResponseEntity.badRequest().body(errores);
     }
     private LocalDateTime dateFormatter(String date){
-        String newDate = date.replace("T", " ");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(newDate, formatter);
+        try {
+            String newDate = date.contains("T") ? date.replace("T", " ") : date;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            return LocalDateTime.parse(newDate, formatter);
+        } catch (DateTimeException e){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            return LocalDateTime.parse(date, formatter);
+        }
     }
 }

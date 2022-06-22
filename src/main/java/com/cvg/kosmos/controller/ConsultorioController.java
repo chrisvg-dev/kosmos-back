@@ -14,13 +14,10 @@ import java.util.List;
 @RequestMapping("/consultorio")
 @CrossOrigin(origins = "*")
 public class ConsultorioController {
-
     private final ConsultorioService consultorioService;
-
     public ConsultorioController(ConsultorioService consultorioService) {
         this.consultorioService = consultorioService;
     }
-
     @GetMapping
     public List<Consultorio> listar() {
         return this.consultorioService.findAll();

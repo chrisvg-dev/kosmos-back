@@ -17,11 +17,9 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class DoctorController {
     private final DoctorService doctorService;
-
     public DoctorController(DoctorService doctorService) {
         this.doctorService = doctorService;
     }
-
     @GetMapping
     public List<Doctor> listar() {
         return this.doctorService.findAll();

@@ -21,11 +21,9 @@ public class KosmosApplication implements CommandLineRunner  {
 		this.doctores = doctores;
 		this.consultorios = consultorios;
 	}
-
 	public static void main(String[] args) {
 		SpringApplication.run(KosmosApplication.class, args);
 	}
-
 	@Override
 	public void run(String... args) throws Exception {
 		List<Doctor> doctores = Arrays.asList(
